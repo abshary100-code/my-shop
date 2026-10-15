@@ -4179,16 +4179,7 @@ async function submitOrder(){
 
       }
 
-      batch.update(
-        ref,
-        {
-          stock:
-            Math.max(
-              0,
-              currentStock-item.quantity
-            )
-        }
-      );
+      
 
     }
 
