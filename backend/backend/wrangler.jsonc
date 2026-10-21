@@ -1,0 +1,6 @@
+{
+  "name": "nazgol-shop-backend",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-21",
+  "compatibility_flags": ["nodejs_compat"]
+}
