@@ -539,7 +539,7 @@ footer{
 </div>
 
 <!-- LOGIN MODAL -->
-<div id="loginModal" class="modal">
+<div id="loginModal" class="modal>
   <div class="modal-box">
     <h2>👤 ورود / ثبت‌نام</h2>
     <input id="loginName" placeholder="نام">
@@ -557,7 +557,12 @@ footer{
     <input id="customerName" placeholder="نام و نام خانوادگی">
     <input id="customerPhone" placeholder="شماره تماس">
     <textarea id="customerAddress" rows="4" placeholder="آدرس"></textarea>
+<label>روش پرداخت</label>
 
+<select id="paymentMethod">
+  <option value="card_to_card">💳 کارت‌به‌کارت</option>
+  <option value="cash_on_delivery">📦 پرداخت در محل</option>
+</select>
     <button class="primary" onclick="submitOrder()">ثبت نهایی سفارش</button>
     <button class="secondary" onclick="closeCheckout()" style="margin-top:8px">بستن</button>
   </div>
@@ -913,6 +918,7 @@ function submitOrder(){
   const name=document.getElementById("customerName").value.trim();
   const phone=document.getElementById("customerPhone").value.trim();
   const address=document.getElementById("customerAddress").value.trim();
+const paymentMethod=document.getElementById("paymentMethod").value;
 
   if(!name || !phone || !address){
     alert("لطفاً اطلاعات سفارش را کامل کن.");
@@ -927,11 +933,12 @@ function submitOrder(){
     id:Date.now(),
     date:new Date().toLocaleString("fa-IR"),
     customer:{
-      name:name,
-      phone:phone,
-      address:address
-    },
-    items:cart.map(item=>{
+  name:name,
+  phone:phone,
+  address:address
+},
+paymentMethod:paymentMethod,
+items:cart.map(item=>{
 
       const p=products.find(x=>x.id===item.id);
 
