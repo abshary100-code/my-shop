@@ -4046,6 +4046,11 @@ async function submitOrder(){
       "customerAddress"
     ).value.trim();
 
+  const paymentMethod=
+    document.getElementById(
+      "paymentMethod"
+    ).value;
+
   const message=
     document.getElementById(
       "checkoutMessage"
@@ -4060,6 +4065,22 @@ async function submitOrder(){
       </div>
       `;
 
+    return;
+
+  }
+
+  if(!cart.length){
+
+    message.innerHTML=
+      `
+      <div class="message error">
+        سبد خرید خالی است.
+      </div>
+      `;
+
+    return;
+
+  }
     return;
 
   }
@@ -4196,15 +4217,15 @@ async function submitOrder(){
 
     const orderRef=
       db.collection("orders").doc();
-
-    batch.set(
-      orderRef,
-      {
-        customerName:name,
-        customerPhone:phone,
-        customerAddress:address,
-        items:orderItems,
-        total:total,
+batch.set(
+  orderRef,
+  {
+    customerName:name,
+    customerPhone:phone,
+    customerAddress:address,
+    items:orderItems,
+    paymentMethod:paymentMethod,
+    total:total,
         currency:"تومان",
         status:"new",
         orderCode:orderCode,
