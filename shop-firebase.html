@@ -1944,9 +1944,7 @@ footer strong{
 
     </div>
 
-    <p style="color:#e91e63;font-weight:bold;">
-      روش پرداخت را انتخاب کن:
-    </p>
+    
 
     <div class="form-group">
 
@@ -1954,11 +1952,13 @@ footer strong{
         روش پرداخت
       </label>
 
-      <select id="paymentMethod">
-        <option value="card_to_card">💳 کارت‌به‌کارت</option>
-        <option value="cash_on_delivery">📦 پرداخت در محل</option>
-      </select>
-
+<div style="display:block !important; margin:15px 0;">
+  <label for="paymentMethod">روش پرداخت</label>
+  <select id="paymentMethod" style="display:block !important; width:100%; padding:12px; background:white; color:black;">
+    <option value="card_to_card">کارت‌به‌کارت</option>
+    <option value="cash_on_delivery">پرداخت در محل</option>
+  </select>
+</div>
     </div>
     <button
       class="submit-btn"
