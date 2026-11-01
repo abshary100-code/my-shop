@@ -1554,11 +1554,13 @@ if(localStorage.getItem("darkMode")==="true"){
 
 updateAccountButton();
 renderProducts();
+document.getElementById("cardInfo").style.display = "none";
 
-</script>
 document.getElementById("paymentMethod").addEventListener("change", function(){
   document.getElementById("cardInfo").style.display =
     this.value === "card_to_card" ? "block" : "none";
 });
+</script>
 </body>
 </html>
+
