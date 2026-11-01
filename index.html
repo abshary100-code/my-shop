@@ -924,7 +924,8 @@ function submitOrder(){
   const phone=document.getElementById("customerPhone").value.trim();
   const address=document.getElementById("customerAddress").value.trim();
 const paymentMethod=document.getElementById("paymentMethod").value;
-
+document.getElementById("cardInfo").style.display =
+  paymentMethod === "card_to_card" ? "block" : "none";
   if(!name || !phone || !address){
     alert("لطفاً اطلاعات سفارش را کامل کن.");
     return;
@@ -1555,6 +1556,9 @@ updateAccountButton();
 renderProducts();
 
 </script>
-
+document.getElementById("paymentMethod").addEventListener("change", function(){
+  document.getElementById("cardInfo").style.display =
+    this.value === "card_to_card" ? "block" : "none";
+});
 </body>
 </html>
