@@ -562,7 +562,12 @@ footer{
 <select id="paymentMethod">
   <option value="card_to_card">💳 کارت‌به‌کارت</option>
   <option value="cash_on_delivery">📦 پرداخت در محل</option>
-</select>
+</select><div id="cardInfo" style="display:none; margin:12px 0; padding:12px; background:#f5f5f5; border-radius:10px;">
+  <h3>اطلاعات پرداخت</h3>
+  <p>شماره کارت: شماره کارت خودت را اینجا وارد کن</p>
+  <p>نام صاحب حساب: نام صاحب کارت را اینجا وارد کن</p>
+  <p>لطفاً پس از پرداخت، رسید را برای فروشگاه ارسال کنید.</p>
+</div>
     <button class="primary" onclick="submitOrder()">ثبت نهایی سفارش</button>
     <button class="secondary" onclick="closeCheckout()" style="margin-top:8px">بستن</button>
   </div>
