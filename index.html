@@ -3,6 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCUMWC1yK997jae6vYTXUTXDIltjQSFTCw",
+  authDomain: "my-shop-732a9.firebaseapp.com",
+  projectId: "my-shop-732a9",
+  storageBucket: "my-shop-732a9.firebasestorage.app",
+  messagingSenderId: "1055009747938",
+  appId: "1:1055009747938:web:8586dd7a1167c741b23fbb"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+const ADMIN_EMAIL = "abshary100@gmail.com";
+</script>
 <title>فروشگاه من</title>
 
 <style>
