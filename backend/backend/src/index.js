@@ -167,7 +167,69 @@ app.get("/api/admin/orders", async (req, res) => {
     });
   }
 });
+// Update order status
+app.patch("/api/admin/orders/:id/status", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
 
+    if (
+      !env.ADMIN_PASSWORD ||
+      auth !== `Bearer ${env.ADMIN_PASSWORD}`
+    ) {
+      return res.status(401).json({
+        ok: false,
+        message: "دسترسی غیرمجاز است."
+      });
+    }
+
+    const orderId = Number(req.params.id);
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      "pending",
+      "preparing",
+      "shipped",
+      "completed"
+    ];
+
+    if (
+      !Number.isSafeInteger(orderId) ||
+      orderId <= 0 ||
+      !allowedStatuses.includes(status)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        message: "اطلاعات نامعتبر است."
+      });
+    }
+
+    const result = await env.DB.prepare(`
+      UPDATE orders
+      SET status = ?
+      WHERE id = ?
+    `).bind(status, orderId).run();
+
+    if (result.meta.changes === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "سفارش پیدا نشد."
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message: "وضعیت سفارش تغییر کرد."
+    });
+
+  } catch (error) {
+    console.error("Update status error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "تغییر وضعیت ناموفق بود."
+    });
+  }
+});
 app.listen(3000);
 
 export default httpServerHandler({ port: 3000 });
