@@ -1,6 +1,13 @@
 {
-  "name": "nazgol-shop-backend",
+  "name": "my-shop",
   "main": "src/index.js",
   "compatibility_date": "2026-10-21",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "nazgol-shop-db",
+      "database_id": "62165a30-57ee-480c-900e-07732a3e9621"
+    }
+  ]
 }
