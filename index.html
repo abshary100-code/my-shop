@@ -937,79 +937,128 @@ function closeCheckout(){
   document.getElementById("checkoutModal").classList.remove("show");
 }
 
-function submitOrder(){
+async function submitOrder() {
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("customerPhone").value.trim();
+  const address = document.getElementById("customerAddress").value.trim();
+  const paymentMethod = document.getElementById("paymentMethod").value;
 
-  const name=document.getElementById("customerName").value.trim();
-  const phone=document.getElementById("customerPhone").value.trim();
-  const address=document.getElementById("customerAddress").value.trim();
-const paymentMethod=document.getElementById("paymentMethod").value;
-document.getElementById("cardInfo").style.display =
-  paymentMethod === "card_to_card" ? "block" : "none";
-  if(!name || !phone || !address){
+  if (!name || !phone || !address) {
     alert("لطفاً اطلاعات سفارش را کامل کن.");
     return;
   }
 
-  const subtotal=calculateSubtotal();
-  const discount=Math.floor(subtotal*discountPercent/100);
-  const total=subtotal-discount+shippingCost;
+  if (!cart.length) {
+    alert("سبد خرید خالی است.");
+    return;
+  }
 
-  const order={
-    id:Date.now(),
-    date:new Date().toLocaleString("fa-IR"),
-    customer:{
-  name:name,
-  phone:phone,
-  address:address
-},
-paymentMethod:paymentMethod,
-items:cart.map(item=>{
+  const subtotal = calculateSubtotal();
+  const discount = Math.floor(subtotal * discountPercent / 100);
+  const total = subtotal - discount + shippingCost;
 
-      const p=products.find(x=>x.id===item.id);
+  const items = cart.map(item => {
+    const p = products.find(x => x.id === item.id);
 
-      return {
-        id:item.id,
-        name:p.name,
-        price:p.price,
-        qty:item.qty
-      };
-    }),
-    shipping:shippingCost,
-    discount:discount,
-    total:total,
-    status:"جدید"
-  };
-
-  orders.push(order);
-  saveOrders();
-
-  cart.forEach(item=>{
-    const p=products.find(x=>x.id===item.id);
-    if(p){
-      p.stock=Math.max(0,p.stock-item.qty);
-    }
+    return {
+      id: item.id,
+      name: p.name,
+      price: p.price,
+      qty: item.qty
+    };
   });
 
-  saveProducts();
+  const button = document.querySelector(
+    '#checkoutModal button[onclick="submitOrder()"]'
+  );
 
-  cart=[];
-  discountPercent=0;
-  shippingCost=30000;
+  button.disabled = true;
+  button.textContent = "در حال ثبت سفارش...";
 
-  document.getElementById("customerName").value="";
-  document.getElementById("customerPhone").value="";
-  document.getElementById("customerAddress").value="";
-  document.getElementById("discountCode").value="";
-  document.getElementById("discountMessage").textContent="";
+  try {
+    const response = await fetch(
+      "https://my-shop.abshary100.workers.dev/api/orders",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          customer: {
+            name,
+            phone,
+            address
+          },
+          paymentMethod,
+          items,
+          shipping: shippingCost,
+          discount,
+          total
+        })
+      }
+    );
 
-  closeCheckout();
-  renderProducts();
-  renderCart();
+    const result = await response.json();
 
-  if (confirm("سفارش ثبت شد! برای ارسال تصویر رسید پرداخت، ادامه بدهید.")) {
-  window.location.href = "https://tally.so/r/o9EAL5";
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "ثبت سفارش ناموفق بود.");
+    }
+
+    const order = {
+      id: result.orderId,
+      date: new Date().toLocaleString("fa-IR"),
+      customer: { name, phone, address },
+      paymentMethod,
+      items,
+      shipping: shippingCost,
+      discount,
+      total,
+      status: "جدید"
+    };
+
+    orders.push(order);
+    saveOrders();
+
+    cart.forEach(item => {
+      const p = products.find(x => x.id === item.id);
+      if (p) {
+        p.stock = Math.max(0, p.stock - item.qty);
+      }
+    });
+
+    saveProducts();
+
+    cart = [];
+    discountPercent = 0;
+    shippingCost = 30000;
+
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("customerAddress").value = "";
+    document.getElementById("discountCode").value = "";
+    document.getElementById("discountMessage").textContent = "";
+
+    closeCheckout();
+    renderProducts();
+    renderCart();
+
+    alert("سفارش با موفقیت در سرور ثبت شد. شماره سفارش: " + result.orderId);
+
+    if (
+      paymentMethod === "card_to_card" &&
+      confirm("برای ارسال تصویر رسید پرداخت ادامه می‌دهید؟")
+    ) {
+      window.location.href = "https://tally.so/r/o9EAL5";
+    }
+
+  } catch (error) {
+    alert("خطا در ثبت سفارش: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "ثبت نهایی سفارش";
+  }
 }
-}
+
 
 /* =========================
    PRODUCT DETAILS
