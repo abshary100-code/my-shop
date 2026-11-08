@@ -1531,62 +1531,106 @@ function deleteProduct(id){
   renderProducts();
 }
 
-function renderOrders(){
+async function renderOrders(){
 
-  const box=document.getElementById("adminOrders");
+  const box = document.getElementById("adminOrders");
 
-  if(orders.length===0){
-    box.innerHTML="<p>هنوز سفارشی ثبت نشده.</p>";
+  box.innerHTML = "<p>در حال دریافت سفارش‌ها...</p>";
+
+  if (!window.adminPassword) {
+    window.adminPassword = prompt("رمز مدیریت را وارد کن:");
+  }
+
+  if (!window.adminPassword) {
+    box.innerHTML = "<p>ورود به پنل مدیریت لغو شد.</p>";
     return;
   }
 
-  box.innerHTML=orders.slice().reverse().map(o=>`
+  try {
+    const response = await fetch(
+      "https://my-shop.abshary100.workers.dev/api/admin/orders",
+      {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + window.adminPassword
+        }
+      }
+    );
 
-    <div class="panel">
+    const result = await response.json();
 
-      <strong>سفارش #${o.id}</strong>
+    if (response.status === 401) {
+      window.adminPassword = "";
+      box.innerHTML = "<p>رمز مدیریت اشتباه است. دوباره وارد پنل شو.</p>";
+      return;
+    }
 
-      <p>تاریخ: ${o.date}</p>
-      <p>مشتری: ${o.customer.name}</p>
-      <p>شماره: ${o.customer.phone}</p>
-      <p>مبلغ: ${formatPrice(o.total)} تومان</p>
+    if (!response.ok || !result.ok) {
+      throw new Error("دریافت سفارش‌ها ناموفق بود.");
+    }
 
-      <select onchange="changeOrderStatus(${o.id},this.value)">
-        <option ${o.status==="جدید"?"selected":""}>جدید</option>
-        <option ${o.status==="در حال آماده‌سازی"?"selected":""}>در حال آماده‌سازی</option>
-        <option ${o.status==="ارسال‌شده"?"selected":""}>ارسال‌شده</option>
-        <option ${o.status==="تکمیل‌شده"?"selected":""}>تکمیل‌شده</option>
-      </select>
+    const orders = result.orders || [];
 
-      <button class="secondary"
-              onclick="deleteOrder(${o.id})">
-        حذف سفارش
-      </button>
+    if (orders.length === 0) {
+      box.innerHTML = "<p>هنوز سفارشی ثبت نشده.</p>";
+      return;
+    }
 
-    </div>
-  `).join("");
-}
+    const escapeHTML = value =>
+      String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[char]);
 
-function changeOrderStatus(id,status){
+    box.innerHTML = orders.map(o => {
 
-  const order=orders.find(o=>o.id===id);
+      let items = [];
 
-  if(order){
-    order.status=status;
-    saveOrders();
-    renderOrders();
+      try {
+        const data = JSON.parse(o.items_json);
+        items = data.items || [];
+      } catch (e) {}
+
+      return `
+        <div class="panel">
+
+          <strong>سفارش شماره ${escapeHTML(o.id)}</strong>
+
+          <p>تاریخ: ${escapeHTML(o.created_at)}</p>
+
+          <p>مشتری: ${escapeHTML(o.customer_name)}</p>
+
+          <p>شماره تماس: ${escapeHTML(o.phone)}</p>
+
+          <p>آدرس: ${escapeHTML(o.address)}</p>
+
+          <p>مبلغ: ${formatPrice(o.total_amount)} تومان</p>
+
+          <p>روش پرداخت: ${escapeHTML(o.payment_method)}</p>
+
+          <p>وضعیت: ${escapeHTML(o.status)}</p>
+
+          <strong>محصولات سفارش:</strong>
+
+          ${items.map(item => `
+            <p>
+              ${escapeHTML(item.name)}
+              - تعداد: ${escapeHTML(item.qty)}
+            </p>
+          `).join("")}
+
+        </div>
+      `;
+    }).join("");
+
+  } catch (error) {
+    box.innerHTML = "<p>خطا در دریافت سفارش‌ها. اتصال سرور را بررسی کن.</p>";
   }
 }
 
-function deleteOrder(id){
-
-  if(!confirm("این سفارش حذف شود؟"))return;
-
-  orders=orders.filter(o=>o.id!==id);
-
-  saveOrders();
-  renderAdmin();
-}
 
 /* =========================
    DARK MODE
