@@ -1550,7 +1550,6 @@ async function renderOrders(){
     const response = await fetch(
       "https://my-shop.abshary100.workers.dev/api/admin/orders",
       {
-        method: "GET",
         headers: {
           "Authorization": "Bearer " + window.adminPassword
         }
@@ -1561,7 +1560,7 @@ async function renderOrders(){
 
     if (response.status === 401) {
       window.adminPassword = "";
-      box.innerHTML = "<p>رمز مدیریت اشتباه است. دوباره وارد پنل شو.</p>";
+      box.innerHTML = "<p>رمز مدیریت اشتباه است.</p>";
       return;
     }
 
@@ -1571,7 +1570,7 @@ async function renderOrders(){
 
     const orders = result.orders || [];
 
-    if (orders.length === 0) {
+    if (!orders.length) {
       box.innerHTML = "<p>هنوز سفارشی ثبت نشده.</p>";
       return;
     }
@@ -1590,8 +1589,7 @@ async function renderOrders(){
       let items = [];
 
       try {
-        const data = JSON.parse(o.items_json);
-        items = data.items || [];
+        items = JSON.parse(o.items_json).items || [];
       } catch (e) {}
 
       return `
@@ -1600,18 +1598,33 @@ async function renderOrders(){
           <strong>سفارش شماره ${escapeHTML(o.id)}</strong>
 
           <p>تاریخ: ${escapeHTML(o.created_at)}</p>
-
           <p>مشتری: ${escapeHTML(o.customer_name)}</p>
-
           <p>شماره تماس: ${escapeHTML(o.phone)}</p>
-
           <p>آدرس: ${escapeHTML(o.address)}</p>
-
           <p>مبلغ: ${formatPrice(o.total_amount)} تومان</p>
-
           <p>روش پرداخت: ${escapeHTML(o.payment_method)}</p>
 
-          <p>وضعیت: ${escapeHTML(o.status)}</p>
+          <p>وضعیت سفارش:</p>
+
+          <select
+            onchange="updateOrderStatus(${Number(o.id)}, this.value)"
+          >
+            <option value="pending" ${o.status === "pending" ? "selected" : ""}>
+              جدید
+            </option>
+
+            <option value="preparing" ${o.status === "preparing" ? "selected" : ""}>
+              در حال آماده‌سازی
+            </option>
+
+            <option value="shipped" ${o.status === "shipped" ? "selected" : ""}>
+              ارسال‌شده
+            </option>
+
+            <option value="completed" ${o.status === "completed" ? "selected" : ""}>
+              تکمیل‌شده
+            </option>
+          </select>
 
           <strong>محصولات سفارش:</strong>
 
@@ -1627,11 +1640,41 @@ async function renderOrders(){
     }).join("");
 
   } catch (error) {
-    box.innerHTML = "<p>خطا در دریافت سفارش‌ها. اتصال سرور را بررسی کن.</p>";
+    console.error(error);
+    box.innerHTML = "<p>خطا در دریافت سفارش‌ها.</p>";
   }
 }
 
 
+async function updateOrderStatus(id, status){
+
+  try {
+    const response = await fetch(
+      `https://my-shop.abshary100.workers.dev/api/admin/orders/${id}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + window.adminPassword
+        },
+        body: JSON.stringify({ status })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "تغییر وضعیت ناموفق بود.");
+    }
+
+    alert("وضعیت سفارش با موفقیت ذخیره شد.");
+
+  } catch (error) {
+    alert("ذخیره وضعیت سفارش ناموفق بود.");
+    console.error(error);
+    renderOrders();
+  }
+}
 /* =========================
    DARK MODE
 ========================= */
