@@ -15,7 +15,10 @@ app.use((req, res, next) => {
 
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
 
   if (req.method === "OPTIONS") {
     return res.sendStatus(204);
@@ -26,6 +29,7 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "50kb" }));
 
+// صفحه اصلی سرور
 app.get("/", (req, res) => {
   res.json({
     ok: true,
@@ -33,6 +37,7 @@ app.get("/", (req, res) => {
   });
 });
 
+// تست سرور
 app.get("/api/test", (req, res) => {
   res.json({
     ok: true,
@@ -40,7 +45,7 @@ app.get("/api/test", (req, res) => {
   });
 });
 
-// ثبت سفارش در دیتابیس
+// ثبت سفارش
 app.post("/api/orders", async (req, res) => {
   try {
     const {
@@ -123,6 +128,42 @@ app.post("/api/orders", async (req, res) => {
     return res.status(500).json({
       ok: false,
       message: "ثبت سفارش با خطا مواجه شد."
+    });
+  }
+});
+
+// دریافت سفارش‌ها با رمز مدیریت
+app.get("/api/admin/orders", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
+
+    if (
+      !env.ADMIN_PASSWORD ||
+      auth !== `Bearer ${env.ADMIN_PASSWORD}`
+    ) {
+      return res.status(401).json({
+        ok: false,
+        message: "دسترسی غیرمجاز است."
+      });
+    }
+
+    const result = await env.DB.prepare(`
+      SELECT * FROM orders
+      ORDER BY id DESC
+      LIMIT 100
+    `).all();
+
+    return res.json({
+      ok: true,
+      orders: result.results
+    });
+
+  } catch (error) {
+    console.error("Admin orders error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "دریافت سفارش‌ها ناموفق بود."
     });
   }
 });
