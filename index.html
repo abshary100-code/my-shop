@@ -1042,7 +1042,12 @@ async function submitOrder() {
     renderProducts();
     renderCart();
 
-    alert("سفارش با موفقیت در سرور ثبت شد. شماره سفارش: " + result.orderId);
+    alert(
+  "سفارش با موفقیت ثبت شد.\n" +
+  "شماره سفارش: " + result.orderId + "\n" +
+  "کد پیگیری: " + result.trackingCode +
+  "\nاین کد را برای پیگیری سفارش نگه دارید."
+);
 
     if (
       paymentMethod === "card_to_card" &&
