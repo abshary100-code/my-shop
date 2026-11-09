@@ -95,7 +95,9 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
-    const result = await env.DB.prepare(`
+const trackingToken = crypto.randomUUID();
+
+const result = await env.DB.prepare(`
       INSERT INTO orders (
         customer_name,
         phone,
@@ -103,24 +105,28 @@ app.post("/api/orders", async (req, res) => {
         items_json,
         total_amount,
         payment_method,
-        status
+        status,
+        tracking_token
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       customer.name,
       customer.phone,
       customer.address,
       JSON.stringify({ items, shipping, discount }),
       total,
-      paymentMethod,
-      "pending"
+            paymentMethod,
+      "pending",
+      trackingToken
+      
     ).run();
-
-    return res.status(201).json({
+ return res.status(201).json({
       ok: true,
       orderId: result.meta.last_row_id,
+      trackingCode: trackingToken,
       message: "سفارش با موفقیت ثبت شد."
     });
+  
 
   } catch (error) {
     console.error("Order error:", error);
