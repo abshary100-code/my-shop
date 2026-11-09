@@ -14,7 +14,7 @@ app.use((req, res, next) => {
   }
 
   res.setHeader("Vary", "Origin");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
@@ -227,6 +227,51 @@ app.patch("/api/admin/orders/:id/status", async (req, res) => {
     return res.status(500).json({
       ok: false,
       message: "تغییر وضعیت ناموفق بود."
+    });
+  }
+});
+app.delete("/api/admin/orders/:id", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
+
+    if (!env.ADMIN_PASSWORD || auth !== `Bearer ${env.ADMIN_PASSWORD}`) {
+      return res.status(401).json({
+        ok: false,
+        message: "دسترسی غیرمجاز است."
+      });
+    }
+
+    const orderId = Number(req.params.id);
+
+    if (!Number.isSafeInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({
+        ok: false,
+        message: "شماره سفارش نامعتبر است."
+      });
+    }
+
+    const result = await env.DB.prepare(
+      "DELETE FROM orders WHERE id = ?"
+    ).bind(orderId).run();
+
+    if (result.meta.changes === 0) {
+      return res.status(404).json({
+        ok: false,
+        message: "سفارش پیدا نشد."
+      });
+    }
+
+    return res.json({
+      ok: true,
+      message: "سفارش با موفقیت حذف شد."
+    });
+
+  } catch (error) {
+    console.error("Delete order error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "حذف سفارش ناموفق بود."
     });
   }
 });
