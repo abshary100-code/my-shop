@@ -281,6 +281,52 @@ app.delete("/api/admin/orders/:id", async (req, res) => {
     });
   }
 });
+// پیگیری سفارش با کد اختصاصی
+app.get("/api/orders/track/:token", async (req, res) => {
+  try {
+    const token = req.params.token;
+
+    if (
+      typeof token !== "string" ||
+      !/^[a-f0-9-]{36}$/i.test(token)
+    ) {
+      return res.status(400).json({
+        ok: false,
+        message: "کد پیگیری نامعتبر است."
+      });
+    }
+
+    const order = await env.DB.prepare(`
+      SELECT id, status, created_at
+      FROM orders
+      WHERE tracking_token = ?
+    `).bind(token).first();
+
+    if (!order) {
+      return res.status(404).json({
+        ok: false,
+        message: "سفارشی با این کد پیگیری پیدا نشد."
+      });
+    }
+
+    return res.json({
+      ok: true,
+      order: {
+        id: order.id,
+        status: order.status,
+        createdAt: order.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error("Track order error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "خطا در پیگیری سفارش."
+    });
+  }
+});
 app.listen(3000);
 
 export default httpServerHandler({ port: 3000 });
