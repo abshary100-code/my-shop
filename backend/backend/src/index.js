@@ -27,7 +27,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: "50kb" }));
+app.use(express.json({ limit: "4mb" }));
 
 // صفحه اصلی سرور
 app.get("/", (req, res) => {
