@@ -1626,7 +1626,14 @@ async function renderOrders(){
             </option>
           </select>
 
-          <strong>محصولات سفارش:</strong>
+<button onclick="deleteOrder(${Number(o.id)})"
+  style="background:#dc3545;color:white;padding:8px 14px;border:0;border-radius:6px;margin:8px 0;cursor:pointer;">
+  حذف سفارش
+</button>
+
+<strong>محصولات سفارش:</strong>
+
+  
 
           ${items.map(item => `
             <p>
