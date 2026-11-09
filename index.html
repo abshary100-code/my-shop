@@ -509,7 +509,23 @@ footer{
 </div>
 
 <div id="productList" class="products"></div>
+<section id="trackingSection" style="padding:20px; margin:20px 0; background:#fff; border-radius:12px;">
+  <h2>📦 پیگیری سفارش</h2>
+  <p>کد پیگیری سفارش خود را وارد کنید:</p>
 
+  <input
+    type="text"
+    id="trackingCodeInput"
+    placeholder="کد پیگیری سفارش"
+    style="width:100%; padding:12px; margin:10px 0;"
+  >
+
+  <button onclick="trackOrder()">
+    پیگیری سفارش
+  </button>
+
+  <div id="trackingResult"></div>
+</section>
 <section id="cart" class="panel hidden">
   <h2>🛒 سبد خرید</h2>
   <div id="cartItems"></div>
