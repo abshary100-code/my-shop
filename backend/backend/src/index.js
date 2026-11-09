@@ -327,6 +327,92 @@ app.get("/api/orders/track/:token", async (req, res) => {
     });
   }
 });
+// آپلود عکس محصول در GitHub
+app.post("/api/admin/upload-image", async (req, res) => {
+  try {
+    const auth = req.headers.authorization;
+
+    if (!env.ADMIN_PASSWORD || auth !== `Bearer ${env.ADMIN_PASSWORD}`) {
+      return res.status(401).json({
+        ok: false,
+        message: "دسترسی غیرمجاز است."
+      });
+    }
+
+    if (!env.GITHUB_TOKEN) {
+      return res.status(500).json({
+        ok: false,
+        message: "تنظیمات ذخیره‌سازی عکس کامل نیست."
+      });
+    }
+
+    const { image } = req.body || {};
+
+    const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(image || "");
+
+    if (!match) {
+      return res.status(400).json({
+        ok: false,
+        message: "فرمت عکس معتبر نیست."
+      });
+    }
+
+    const imageBytes = Uint8Array.from(
+      atob(match[2]),
+      c => c.charCodeAt(0)
+    );
+
+    if (imageBytes.length > 2 * 1024 * 1024) {
+      return res.status(400).json({
+        ok: false,
+        message: "حجم عکس باید کمتر از ۲ مگابایت باشد."
+      });
+    }
+
+    const extension = match[1] === "jpeg" ? "jpg" : match[1];
+    const fileName = `product-${crypto.randomUUID()}.${extension}`;
+
+    const githubResponse = await fetch(
+      `https://api.github.com/repos/abshary100-code/my-shop/contents/images/${fileName}`,
+      {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
+          "Accept": "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Upload product image",
+          content: match[2],
+          branch: "main"
+        })
+      }
+    );
+
+    if (!githubResponse.ok) {
+      console.error("GitHub upload error:", await githubResponse.text());
+
+      return res.status(502).json({
+        ok: false,
+        message: "ذخیره عکس در گیت‌هاب ناموفق بود."
+      });
+    }
+
+    return res.json({
+      ok: true,
+      imageUrl: `https://abshary100-code.github.io/my-shop/images/${fileName}`
+    });
+
+  } catch (error) {
+    console.error("Image upload error:", error);
+
+    return res.status(500).json({
+      ok: false,
+      message: "خطا در آپلود عکس."
+    });
+  }
+});
 app.listen(3000);
 
 export default httpServerHandler({ port: 3000 });
