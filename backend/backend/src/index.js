@@ -378,7 +378,8 @@ app.post("/api/admin/upload-image", async (req, res) => {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-          "Accept": "application/vnd.github+json",
+        "Accept": "application/vnd.github+json",
+          "User-Agent": "NazgolShopImageUploader",
           "X-GitHub-Api-Version": "2022-11-28",
           "Content-Type": "application/json"
         },
