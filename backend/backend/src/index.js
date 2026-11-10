@@ -391,13 +391,16 @@ app.post("/api/admin/upload-image", async (req, res) => {
     );
 
     if (!githubResponse.ok) {
-      console.error("GitHub upload error:", await githubResponse.text());
+  const githubError = await githubResponse.text();
 
-      return res.status(502).json({
-        ok: false,
-        message: "ذخیره عکس در گیت‌هاب ناموفق بود."
-      });
-    }
+  console.error("GitHub upload error:", githubError);
+
+  return res.status(502).json({
+    ok: false,
+    message: "خطای گیت‌هاب: " + githubError
+  });
+}
+    
 
     return res.json({
       ok: true,
