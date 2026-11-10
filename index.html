@@ -1528,37 +1528,89 @@ function renderDashboard(){
   `;
 }
 
-function addProduct(){
+async function addProduct() {
+  const name = document.getElementById("newName").value.trim();
+  const price = Number(document.getElementById("newPrice").value);
+  const stock = Number(document.getElementById("newStock").value);
+  const file = document.getElementById("newImage").files[0];
+  const description = document.getElementById("newDescription").value.trim();
+  const category = document.getElementById("newCategory").value;
 
-  const name=document.getElementById("newName").value.trim();
-  const price=Number(document.getElementById("newPrice").value);
-  const stock=Number(document.getElementById("newStock").value);
-  const image=document.getElementById("newImage").value.trim();
-  const description=document.getElementById("newDescription").value.trim();
-  const category=document.getElementById("newCategory").value;
-
-  if(!name || !price || stock<0 || !image){
-    alert("اطلاعات محصول را کامل کن.");
+  if (!name || !price || stock < 0 || !file) {
+    alert("اطلاعات محصول و عکس را کامل کن.");
     return;
   }
 
-  products.push({
-    id:Date.now(),
-    name:name,
-    price:price,
-    stock:stock,
-    image:image,
-    description:description,
-    category:category
-  });
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    alert("فرمت عکس باید JPG یا PNG یا WEBP باشد.");
+    return;
+  }
 
-  saveProducts();
+  if (file.size > 2 * 1024 * 1024) {
+    alert("حجم عکس باید کمتر از ۲ مگابایت باشد.");
+    return;
+  }
 
-  alert("محصول اضافه شد.");
-  renderAdmin();
-  renderProducts();
+  let password = window.adminPassword;
+
+  if (!password) {
+    password = prompt("رمز مدیریت را وارد کن:");
+  }
+
+  if (!password) return;
+
+  window.adminPassword = password;
+
+  try {
+    const imageData = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const response = await fetch(
+      "https://my-shop.abshary100.workers.dev/api/admin/upload-image",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + password
+        },
+        body: JSON.stringify({ image: imageData })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "آپلود عکس ناموفق بود.");
+    }
+
+    products.push({
+      id: Date.now(),
+      name,
+      price,
+      stock,
+      image: result.imageUrl,
+      description,
+      category
+    });
+
+    saveProducts();
+
+    alert("محصول و عکس آن با موفقیت اضافه شدند.");
+
+    document.getElementById("newImage").value = "";
+    renderAdmin();
+    renderProducts();
+
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
+  
 function renderAdminProducts(){
 
   const box=document.getElementById("adminProducts");
