@@ -465,13 +465,25 @@ footer{
 </section>
 
 
-<div class="search-box">
   <input id="searchInput" placeholder="🔍 جستجوی محصول..." oninput="renderProducts()">
   <button onclick="document.getElementById('searchInput').focus()">جستجو</button>
 </div>
 
 <h2 class="section-title">دسته‌بندی‌ها</h2>
 <div class="categories">
+
+  <div class="category"
+       style="background-image:url('https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=600&q=80')"
+       onclick="setCategory('beauty')">
+    <span>💄 آرایشی و بهداشتی</span>
+  </div>
+
+  <div class="category"
+       style="background-image:url('https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80')"
+       onclick="setCategory('home')">
+    <span>🏠 لوازم خانگی</span>
+  </div>
+
   <div class="category"
        style="background-image:url('https://abshary100-code.github.io/my-shop/images/zYhi57yNFLJp3OuUmfcInUyEOqR6DcicY2RwlWXLwjCzbP3ZKJ.jpg_512X512X70.jpg')"
        onclick="setCategory('bag')">
@@ -495,6 +507,7 @@ footer{
        onclick="setCategory('all')">
     <span>✨ همه محصولات</span>
   </div>
+
 </div>
 
 <h2 class="section-title" id="products">⭐ محصولات</h2>
